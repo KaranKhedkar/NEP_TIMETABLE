@@ -1,0 +1,28 @@
+# Python Virtual Environment
+# This is specific to your machine and can be very large.
+/.ttgen/
+
+# Secrets file
+# Never commit your secret keys!
+.env
+
+# Generated output files
+# These files are created by running the script.
+*.pkl
+final_timetable.csv
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Editor/IDE specific folders
+.vscode/
+.idea/
+
+# Local data folder (app uses Supabase)
+data/
+
+# Temporary and personal debugging scripts
+get_table.py

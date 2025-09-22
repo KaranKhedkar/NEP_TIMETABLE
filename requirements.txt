@@ -1,0 +1,5 @@
+pandas
+numpy
+deap
+supabase
+python-dotenv
