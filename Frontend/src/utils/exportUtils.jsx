@@ -13,7 +13,6 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
       return;
     }
 
-    // Show loading
     loadingDiv = document.createElement('div');
     loadingDiv.id = 'pdf-loading-indicator';
     loadingDiv.innerHTML = `
@@ -24,7 +23,7 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
     `;
     document.body.appendChild(loadingDiv);
 
-    // Enhanced color replacement - handle all problematic CSS properties
+   
     const originalStyles = [];
     const allElements = element.querySelectorAll('*');
     
@@ -33,7 +32,7 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
       const originalStyle = el.style.cssText;
       originalStyles.push({ element: el, originalStyle });
       
-      // Handle all CSS color properties that might use oklch
+ 
       const colorProperties = [
         'backgroundColor', 'color', 'borderColor', 'borderTopColor', 
         'borderRightColor', 'borderBottomColor', 'borderLeftColor',
@@ -58,47 +57,46 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
               el.style[property] = getSimpleBorderColor(el);
               break;
             case 'boxShadow':
-              el.style.boxShadow = 'none'; // Remove problematic shadows
+              el.style.boxShadow = 'none'; 
               break;
             case 'textShadow':
-              el.style.textShadow = 'none'; // Remove problematic text shadows
+              el.style.textShadow = 'none'; 
               break;
           }
         }
       });
       
-      // Force override any remaining problematic styles
+
       if (el.style.background && (el.style.background.includes('oklch') || el.style.background.includes('color('))) {
         el.style.background = getSimpleBackgroundColor(el);
       }
     });
 
-    // Wait a moment for styles to apply
+ 
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Enhanced html2canvas options
     const canvas = await html2canvas(element, {
-      scale: 1.2, // Slightly higher quality
+      scale: 1.2, 
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
       removeContainer: true,
-      foreignObjectRendering: false, // Disable to avoid some color issues
+      foreignObjectRendering: false, 
       ignoreElements: (element) => {
-        // Ignore elements that might cause issues
+   
         return element.tagName === 'SCRIPT' || 
                element.tagName === 'NOSCRIPT' ||
                element.id === 'pdf-loading-indicator';
       },
       onclone: (clonedDoc) => {
-        // Additional cleanup in the cloned document
+
         const clonedElements = clonedDoc.querySelectorAll('*');
         clonedElements.forEach(el => {
-          // Force simple colors in cloned document
+
           const computedStyle = window.getComputedStyle(el);
           
-          // Override any remaining problematic colors
+
           if (el.style.color === '' || el.style.color.includes('oklch')) {
             el.style.color = getComputedTextColor(el) || '#000000';
           }
@@ -111,7 +109,7 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
             el.style.borderColor = getComputedBorderColor(el) || '#e5e7eb';
           }
           
-          // Remove any CSS custom properties that might cause issues
+                 
           el.style.removeProperty('--tw-bg-opacity');
           el.style.removeProperty('--tw-text-opacity');
           el.style.removeProperty('--tw-border-opacity');
@@ -119,12 +117,12 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
       }
     });
 
-    // Restore original styles immediately after capture
+ 
     originalStyles.forEach(({ element, originalStyle }) => {
       element.style.cssText = originalStyle;
     });
 
-    // Create PDF with better error handling
+
     const imgData = canvas.toDataURL('image/png', 0.8);
     const pdf = new jsPDF('landscape', 'mm', 'a4');
     
@@ -132,9 +130,9 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const margin = 15;
     
-    // Calculate scaling to fit page with margins
+
     const maxWidth = pdfWidth - (margin * 2);
-    const maxHeight = pdfHeight - (margin * 3); // Extra margin for footer
+    const maxHeight = pdfHeight - (margin * 3); 
     const imgAspectRatio = canvas.height / canvas.width;
     
     let imgWidth = maxWidth;
@@ -147,24 +145,22 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
     
     const x = (pdfWidth - imgWidth) / 2;
     const y = margin;
-    
-    // Add the image to PDF
+
     pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
     
-    // Add footer with timestamp
     pdf.setFontSize(10);
     pdf.setTextColor(100);
     pdf.text(`Generated: ${new Date().toLocaleString()}`, margin, pdfHeight - 10);
     
-    // Save the PDF
+
     pdf.save(`${filename}.pdf`);
     
-    // Show success message briefly
+
     if (loadingDiv) {
       loadingDiv.innerHTML = `
         <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                     background: rgba(0,128,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 9999; font-family: Arial;">
-          ✅ PDF Generated Successfully!
+          PDF Generated Successfully!
         </div>
       `;
       setTimeout(() => {
@@ -177,11 +173,10 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
   } catch (error) {
     console.error('PDF Generation Error:', error);
     
-    // Show detailed error message
     alert(`Error generating PDF: ${error.message}\n\nPlease try:\n1. Refreshing the page\n2. Selecting a different program\n3. Using a different browser`);
     
   } finally {
-    // Cleanup loading indicator if still present
+
     const existingLoader = document.getElementById('pdf-loading-indicator');
     if (existingLoader && existingLoader.parentNode) {
       setTimeout(() => {
@@ -191,9 +186,8 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
   }
 };
 
-// Enhanced helper functions with more color mappings
 function getSimpleBackgroundColor(element) {
-  // Check for specific Tailwind classes
+
   const classList = Array.from(element.classList);
   
   for (const className of classList) {
@@ -215,7 +209,7 @@ function getSimpleBackgroundColor(element) {
     }
   }
   
-  // Check parent elements for background colors
+
   let parent = element.parentElement;
   while (parent && parent !== document.body) {
     if (parent.classList.contains('bg-white')) return '#ffffff';
@@ -268,7 +262,7 @@ function getSimpleBorderColor(element) {
   return '#e5e7eb';
 }
 
-// Additional helper functions for computed styles
+
 function getComputedTextColor(element) {
   if (element.classList.contains('text-white')) return '#ffffff';
   if (element.classList.contains('text-slate-700')) return '#334155';
@@ -289,7 +283,7 @@ function getComputedBorderColor(element) {
   return '#e5e7eb';
 }
 
-// Export to Excel (your existing function - keeping it as is)
+
 export const exportToExcel = (data, programName, showAllPrograms = false) => {
   try {
     const workbook = XLSX.utils.book_new();
@@ -364,120 +358,6 @@ export const exportToExcel = (data, programName, showAllPrograms = false) => {
     alert('Error generating Excel file. Please try again.');
   }
 };
-
-
-// // Export to Excel
-// export const exportToExcel = (data, programName, showAllPrograms = false) => {
-//   try {
-//     const workbook = XLSX.utils.book_new();
-    
-//     if (showAllPrograms) {
-//       // Get all programs
-//       const programs = [...new Set(data.map(item => item.program_code))].sort();
-      
-//       programs.forEach(program => {
-//         const programData = data.filter(item => item.program_code === program);
-        
-//         if (programData.length > 0) {
-//           // Create worksheet data
-//           const wsData = [
-//             ['Day', 'Time', 'Course Name', 'Faculty Name', 'Room', 'Course Type', 'Credits'],
-//             ...programData.map(item => [
-//               item.Day || '',
-//               item.Time || '',
-//               item.course_name || '',
-//               item.faculty_name || '',
-//               item.room_name || '',
-//               item.course_type || '',
-//               item.credits || ''
-//             ])
-//           ];
-          
-//           const worksheet = XLSX.utils.aoa_to_sheet(wsData);
-          
-//           // Set column widths
-//           worksheet['!cols'] = [
-//             { wch: 12 }, // Day
-//             { wch: 10 }, // Time
-//             { wch: 25 }, // Course Name
-//             { wch: 20 }, // Faculty
-//             { wch: 15 }, // Room
-//             { wch: 15 }, // Type
-//             { wch: 8 }   // Credits
-//           ];
-          
-     
-//           const cleanProgramName = program.replace(/[\\/:*?[\]]/g, '').substring(0, 31);
-//           XLSX.utils.book_append_sheet(workbook, worksheet, cleanProgramName);
-//         }
-//       });
-      
-//       // Save workbook
-//       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-//       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-//       saveAs(blob, 'All_Programs_Timetable.xlsx');
-      
-//     } else {
-//       // Single program
-//       const programData = data.filter(item => item.program_code === programName);
-      
-//       if (programData.length === 0) {
-//         alert('No data found for the selected program');
-//         return;
-//       }
-      
-//       // Create worksheet data
-//       const wsData = [
-//         ['Day', 'Time', 'Course Name', 'Faculty Name', 'Room', 'Course Type', 'Credits'],
-//         ...programData.map(item => [
-//           item.Day || '',
-//           item.Time || '',
-//           item.course_name || '',
-//           item.faculty_name || '',
-//           item.room_name || '',
-//           item.course_type || '',
-//           item.credits || ''
-//         ])
-//       ];
-      
-//       const worksheet = XLSX.utils.aoa_to_sheet(wsData);
-      
-//       // Set column widths
-//       worksheet['!cols'] = [
-//         { wch: 12 }, // Day
-//         { wch: 10 }, // Time
-//         { wch: 25 }, // Course Name
-//         { wch: 20 }, // Faculty
-//         { wch: 15 }, // Room
-//         { wch: 15 }, // Type
-//         { wch: 8 }   // Credits
-//       ];
-      
-//       const cleanProgramName = programName.replace(/[\\/:*?[\]]/g, '').substring(0, 31);
-//       XLSX.utils.book_append_sheet(workbook, worksheet, cleanProgramName);
-      
-//       // Save workbook
-//       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-//       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-//       saveAs(blob, `${cleanProgramName}_Timetable.xlsx`);
-//     }
-    
-//   } catch (error) {
-//     console.error('Error generating Excel:', error);
-//     alert('Error generating Excel file. Please try again.');
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
 
 
 
