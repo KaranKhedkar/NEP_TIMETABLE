@@ -18,7 +18,7 @@ export const exportVisualTimetableToPDF = async (elementId, filename = 'timetabl
     loadingDiv.innerHTML = `
       <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                   background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 9999; font-family: Arial;">
-        🔄 Generating PDF... Please wait
+         Generating PDF... Please wait
       </div>
     `;
     document.body.appendChild(loadingDiv);

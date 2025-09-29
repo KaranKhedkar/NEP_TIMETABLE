@@ -1,11 +1,9 @@
-// TimetableGenerationPanel.jsx
 import { useState } from "react";
 import { BoltIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import ProgramTimetable from "./programTimetable";
 
-function TimetableGenerationPanel() {
+function TimetableGenerationPanel({ timetableData, setTimetableData }) {
   const [loading, setLoading] = useState(false);
-  const [timetable, setTimetable] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -13,7 +11,6 @@ function TimetableGenerationPanel() {
     setLoading(true);
     setError("");
     setSuccess("");
-    setTimetable([]);
     try {
       const response = await fetch("http://localhost:8000/generate-timetable", {
         method: "POST",
@@ -27,7 +24,7 @@ function TimetableGenerationPanel() {
 
       const tRes = await fetch("http://localhost:8000/timetable");
       const tData = await tRes.json();
-      setTimetable(tData.data || []);
+      setTimetableData(tData.data || []); 
     } catch (err) {
       setError(err.message || "Error generating timetable");
     } finally {
@@ -72,24 +69,24 @@ function TimetableGenerationPanel() {
                 Please wait, generating optimized timetable...
               </div>
             )}
-            {!timetable.length && !loading && (
+            {!timetableData.length && !loading && (
               <div className="flex flex-col items-center justify-center text-slate-500 py-6">
                 <CalendarDaysIcon className="h-10 w-10 mb-2" />
                 <span>No timetable generated yet</span>
               </div>
             )}
-            {timetable.length > 0 && (
+            {timetableData.length > 0 && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                 Generated {timetable.length} class slots successfully!
+                 Generated {timetableData.length} class slots successfully!
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {timetable.length > 0 && (
+      {timetableData.length > 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-          <ProgramTimetable data={timetable} />
+          <ProgramTimetable data={timetableData} />
         </div>
       )}
     </div>

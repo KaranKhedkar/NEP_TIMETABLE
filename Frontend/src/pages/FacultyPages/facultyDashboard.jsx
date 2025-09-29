@@ -17,6 +17,7 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   PaperAirplaneIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
 export default function FacultyDashboard() {
@@ -151,14 +152,9 @@ function DashboardTab() {
         <div className="lg:col-span-8">
           <TodaySchedulePanel />
         </div>
-        {/* <div className="lg:col-span-4">
-          <UpcomingClassesPanel />
-        </div> */}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* <WeeklyOverviewPanel />
-        <RecentNotificationsPanel /> */}
       </div>
     </div>
   );
@@ -212,43 +208,12 @@ function RequestsTab() {
         <div className="lg:col-span-8">
           <RequestFormsPanel />
         </div>
-        {/* <div className="lg:col-span-4">
-          <RequestStatusPanel />
-        </div> */}
-      </div>
-
-      {/* <PendingRequestsPanel /> */}
-    </div>
-  );
-}
-
-function MaterialsTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Study Materials</h2>
-          <p className="text-slate-600">
-            Upload and manage course materials for your students
-          </p>
-        </div>
-        <button className="flex items-center gap-2 w-full sm:w-auto rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-indigo-700 transition">
-          <DocumentArrowUpIcon className="h-4 w-4" />
-          Upload Material
-        </button>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <MaterialsListPanel />
-        </div>
-        <div>
-          <MaterialsStatsPanel />
-        </div>
       </div>
     </div>
   );
 }
+
+
 
 function StatsCard({ title, value, change, color, icon: IconComponent }) {
   const colorMap = {
@@ -282,53 +247,70 @@ function TodaySchedulePanel() {
     {
       time: "9:00 AM - 10:00 AM",
       course: "Educational Psychology",
+      courseCode: "BED102",
       room: "Room 204",
-      students: "B.Ed Sem 3",
+      students: "B.Ed Sem 1",
       status: "completed",
+      type: "Major"
     },
     {
       time: "11:00 AM - 12:00 PM",
-      course: "Curriculum Development",
-      room: "Room 106",
+      course: "Research Methodology",
+      courseCode: "MED202",
+      room: "Physics Lab 2",
       students: "M.Ed Sem 1",
       status: "completed",
+      type: "Major"
     },
     {
       time: "2:00 PM - 3:00 PM",
-      course: "Teaching Methodology",
-      room: "Room 302",
+      course: "Curriculum Development",
+      courseCode: "BED202",
+      room: "Room 301",
       students: "B.Ed Sem 2",
       status: "upcoming",
-    },
-    {
-      time: "4:00 PM - 5:00 PM",
-      course: "Research Methods",
-      room: "Room 108",
-      students: "M.Ed Sem 2",
-      status: "upcoming",
-    },
+      type: "Major"
+    }
   ];
 
+  const getTypeColor = (type) => {
+    const colors = {
+      "Major": "bg-blue-50 border-blue-300",
+      "Minor": "bg-emerald-50 border-emerald-300",
+      "Skill-Based": "bg-purple-50 border-purple-300"
+    };
+    return colors[type] || "bg-gray-50 border-gray-300";
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 shadow-xl">
-      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-indigo-500/10 via-violet-500/10 to-transparent blur-2xl" />
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+      <div className="absolute -inset-1 rounded-2xl  blur-2xl" />
       <div className="relative p-6 sm:p-8">
-        <h3 className="text-lg font-semibold">Today's Schedule</h3>
-        <p className="mt-2 text-slate-600">Your classes for today</p>
-        <div className="mt-6 space-y-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Today's Schedule</h3>
+            <p className="text-slate-600 text-sm">Thursday, September 29, 2025</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm font-medium text-slate-700">{todayClasses.length} Classes</div>
+            <div className="text-xs text-slate-500">3 hrs total</div>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
           {todayClasses.map((classItem, i) => (
             <div
               key={i}
-              className={`flex items-center gap-4 p-4 rounded-xl border transition ${
+              className={`flex items-start gap-4 p-4 rounded-xl border transition ${
                 classItem.status === "completed"
-                  ? "border-emerald-200 bg-emerald-50"
+                  ? "border-emerald-200"
                   : classItem.status === "upcoming"
-                  ? "border-amber-200 bg-amber-50"
-                  : "border-slate-200 bg-white"
+                  ? "border-amber-200 "
+                  : "border-slate-200"
               }`}
             >
               <div
-                className={`p-2 rounded-lg ${
+                className={`p-2 rounded-lg flex-shrink-0 ${
                   classItem.status === "completed"
                     ? "bg-emerald-100"
                     : classItem.status === "upcoming"
@@ -337,152 +319,305 @@ function TodaySchedulePanel() {
                 }`}
               >
                 {classItem.status === "completed" ? (
-                  <CheckCircleIcon className="h-6 w-6 text-emerald-600" />
+                  <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
                 ) : (
-                  <ClockIcon className="h-6 w-6 text-amber-600" />
+                  <ClockIcon className="h-5 w-5 text-amber-600" />
                 )}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div className="font-medium">{classItem.course}</div>
-                  <div className="text-sm text-slate-600">{classItem.time}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-slate-900 truncate">{classItem.course}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                     
+                      <span className={`text-xs px-2 py-1 rounded border ${getTypeColor(classItem.type)}`}>
+                        {classItem.type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-sm font-medium text-slate-700">{classItem.time}</div>
+                  </div>
                 </div>
-                <div className="text-sm text-slate-600 mt-1">
-                  {classItem.room} • {classItem.students}
+                <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                  <div className="flex items-center gap-1">
+                    <BuildingOfficeIcon className="h-4 w-4" />
+                    <span>{classItem.room}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <UserGroupIcon className="h-4 w-4" />
+                    <span>{classItem.students}</span>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function UpcomingClassesPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-md shadow-xl p-6">
-      <h3 className="font-semibold">Upcoming Classes</h3>
-      <div className="mt-4 space-y-4">
-        <div className="p-4 rounded-lg border border-slate-200">
-          <div className="font-medium">Tomorrow</div>
-          <div className="text-sm text-slate-600 mt-1">6 classes scheduled</div>
-        </div>
-        <div className="p-4 rounded-lg border border-slate-200">
-          <div className="font-medium">This Week</div>
-          <div className="text-sm text-slate-600 mt-1">24 total hours</div>
-        </div>
-        <div className="p-4 rounded-lg border border-slate-200">
-          <div className="font-medium">Next Week</div>
-          <div className="text-sm text-slate-600 mt-1">22 total hours</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function WeeklyOverviewPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Weekly Overview</h3>
-      <div className="mt-4 space-y-3">
-        <StatRow label="Monday" value="6 classes" />
-        <StatRow label="Tuesday" value="4 classes" />
-        <StatRow label="Wednesday" value="5 classes" />
-        <StatRow label="Thursday" value="3 classes" />
-        <StatRow label="Friday" value="6 classes" />
-      </div>
-    </div>
-  );
-}
-
-function RecentNotificationsPanel() {
-  const notifications = [
-    {
-      message: "Room change: Edu Psych moved to Room 205",
-      time: "2 hours ago",
-      type: "warning",
-    },
-    {
-      message: "New student enrolled in M.Ed Sem 1",
-      time: "1 day ago",
-      type: "info",
-    },
-    {
-      message: "Leave request approved for next Friday",
-      time: "2 days ago",
-      type: "success",
-    },
-  ];
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Recent Notifications</h3>
-      <div className="mt-4 space-y-4">
-        {notifications.map((notification, i) => (
-          <div key={i} className="p-4 rounded-lg border border-slate-200">
-            <div className="text-sm font-medium">{notification.message}</div>
-            <div className="text-xs text-slate-600 mt-1">{notification.time}</div>
+        
+        <div className="mt-6 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <ClockIcon className="h-4 w-4 text-indigo-600" />
+            <span className="text-indigo-700 font-medium">Next class in 45 minutes</span>
+            <span className="text-indigo-600">• Curriculum Development @ Room 301</span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+
+function WeeklyTimetablePanel() {
+  const facultyTimetable = {
+    "Monday": {
+      "09-10": {
+        courseName: "Educational Psychology", 
+        courseCode: "BED102",
+        room: "Room 204", 
+        students: "B.Ed Sem 1",
+        type: "Major"
+      },
+      "10-11": {
+        courseName: "Curriculum Development", 
+        courseCode: "BED202",
+        room: "Room 301", 
+        students: "B.Ed Sem 2",
+        type: "Major"
+      },
+      "11-12": {
+        courseName: "Research Methodology", 
+        courseCode: "MED202",
+        room: "Seminar Hall A", 
+        students: "M.Ed Sem 1",
+        type: "Major"
+      },
+        "01-02": {
+        courseName: "Gender, School and Society", 
+        courseCode: "BED301",
+        room: "Room 302", 
+        students: "B.Ed Sem 3",
+        type: "Skill-Based"
+      },
+        "02-03": {
+        courseName: "Professional Communication", 
+        courseCode: "FYUP-AEC101",
+        room: "Room 204", 
+        students: "FYUP Science Sem 1",
+        type: "Ability Enhancement"
+      }
+    },
+    "Tuesday": {
+      "09-10": {
+        courseName: "Childhood and Growing Up", 
+        courseCode: "BED101",
+        room: "Room 102", 
+        students: "B.Ed Sem 1",
+        type: "Major"
+      },
+      "11-12": {
+        courseName: "Educational Technology", 
+        courseCode: "MED301",
+        room: "Computer Lab 3", 
+        students: "M.Ed Sem 2",
+        type: "Major"
+      },
+      "01-02": {
+        courseName: "Assessment for Learning", 
+        courseCode: "BED201",
+        room: "Room 205", 
+        students: "B.Ed Sem 2",
+        type: "Major"
+      }
+    },
+    "Wednesday": {
+      "10-11": {
+        courseName: "Advanced Curriculum Theory", 
+        courseCode: "MED201",
+        room: "Lecture Hall 1", 
+        students: "M.Ed Sem 1",
+        type: "Major"
+      },
+      "11-12": {
+        courseName: "Gender, School and Society", 
+        courseCode: "BED301",
+        room: "Room 302", 
+        students: "B.Ed Sem 3",
+        type: "Skill-Based"
+      },
+      "02-03": {
+        courseName: "Professional Communication", 
+        courseCode: "FYUP-AEC101",
+        room: "Room 204", 
+        students: "FYUP Science Sem 1",
+        type: "Ability Enhancement"
+      },
+    
+    },
+    "Thursday": {
+      "10-11": {
+        courseName: "Educational Psychology", 
+        courseCode: "BED102",
+        room: "Room 204", 
+        students: "B.Ed Sem 1",
+        type: "Major"
+      },
+      "11-12": {
+        courseName: "Research Methodology", 
+        courseCode: "MED202",
+        room: "Physics Lab 2", 
+        students: "M.Ed Sem 1",
+        type: "Major"
+      },
+          "01-02": {
+        courseName: "Gender, School and Society", 
+        courseCode: "BED301",
+        room: "Room 302", 
+        students: "B.Ed Sem 3",
+        type: "Skill-Based"
+      },
+      "02-03": {
+        courseName: "Curriculum Development", 
+        courseCode: "BED202",
+        room: "Room 301", 
+        students: "B.Ed Sem 2",
+        type: "Major"
+      }
+    },
+    "Friday": {
+      "10-11": {
+        courseName: "Assessment for Learning", 
+        courseCode: "BED201",
+        room: "Room 205", 
+        students: "B.Ed Sem 2",
+        type: "Major"
+      },
+      "11-12": {
+        courseName: "Educational Technology", 
+        courseCode: "MED301",
+        room: "Computer Lab 3", 
+        students: "M.Ed Sem 2",
+        type: "Major"
+      },
+         "01-02": {
+        courseName: "Professional Communication", 
+        courseCode: "FYUP-AEC101",
+        room: "Room 204", 
+        students: "FYUP Science Sem 1",
+        type: "Ability Enhancement"
+      }
+    }
+  };
+
+  const timeSlots = [
+    { time: "9:00", code: "09-10" },
+    { time: "10:00", code: "10-11" },
+    { time: "11:00", code: "11-12" },
+    { time: "1:00", code: "01-02" },
+    { time: "2:00", code: "02-03" },
+    { time: "3:00", code: "03-04" }
+  ];
+  
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+  const getTypeColor = (type) => {
+    const colors = {
+      "Major": "bg-blue-50 border-blue-300 text-blue-800",
+      "Minor": "bg-emerald-50 border-emerald-300 text-emerald-800",
+      "Skill-Based": "bg-purple-50 border-purple-300 text-purple-800",
+      "Ability Enhancement": "bg-pink-50 border-pink-300 text-pink-800",
+      "Value-Added": "bg-amber-50 border-amber-300 text-amber-800"
+    };
+    return colors[type] || "bg-gray-50 border-gray-300 text-gray-800";
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+      <div className="grid grid-cols-[100px_repeat(5,1fr)] bg-slate-700 text-white text-sm">
+        <div className="p-3 text-center font-medium border-r border-slate-600">
+          <ClockIcon className="h-4 w-4 mx-auto mb-1" />
+          <div className="text-xs">Time</div>
+        </div>
+        {days.map((day) => (
+          <div
+            key={day}
+            className="p-3 text-center font-bold border-r border-slate-600 last:border-r-0"
+          >
+            <div className="hidden sm:block">{day}</div>
+            <div className="sm:hidden">{day.slice(0, 3).toUpperCase()}</div>
+          </div>
+        ))}
+      </div>
+
+    
+      <div className="divide-y divide-slate-200">
+        {timeSlots.map((slot, rowIndex) => (
+          <Fragment key={slot.code}>
+            <div className="grid grid-cols-[100px_repeat(5,1fr)] min-h-[80px]">
+              <div className="bg-slate-50 border-r border-slate-200 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="font-bold text-slate-700 text-sm">{slot.time}</div>
+                  <div className="text-xs text-slate-500">PM</div>
+                </div>
+              </div>
+              {days.map((day) => {
+                const classData = facultyTimetable[day]?.[slot.code];
+                
+                return (
+                  <div
+                    key={`${day}-${slot.code}`}
+                    className="border-r border-slate-200 last:border-r-0 p-2"
+                  >
+                    {classData ? (
+                      <div className={`h-full rounded-lg border p-3 ${getTypeColor(classData.type)} shadow-sm hover:shadow-md transition-shadow`}>
+                        <div className="font-semibold text-xs mb-2 leading-tight">
+                          {classData.courseName}
+                        </div>
+                        <div className="text-xs space-y-1">
+                       
+                          <div className="flex items-center gap-1">
+                            <BuildingOfficeIcon className="h-3 w-3 opacity-70 flex-shrink-0" />
+                            <span className="truncate">{classData.room}</span>
+                          </div>
+                          {/* <div className="flex items-center gap-1">
+                            <UserGroupIcon className="h-3 w-3 opacity-70 flex-shrink-0" />
+                            <span className="truncate text-xs">{classData.students}</span>
+                          </div> */}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+                        <div className="text-center">
+                          <ClockIcon className="h-4 w-4 mx-auto mb-1 opacity-50" />
+                          <div>Free</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+    
+            {rowIndex === 2 && (
+              <div className="grid grid-cols-[100px_repeat(5,1fr)] min-h-[50px] bg-slate-100 border-b border-slate-300">
+                <div className="col-span-6 flex items-center justify-center">
+                  <div className="text-slate-600 font-medium text-sm">
+                     Lunch Break (12:00 - 1:00 PM)
+                  </div>
+                </div>
+              </div>
+            )}
+          </Fragment>
         ))}
       </div>
     </div>
   );
 }
 
-function WeeklyTimetablePanel() {
-  const timeSlots = [
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-  ];
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="p-3 text-left font-medium text-slate-600">Time</th>
-              {days.map((day) => (
-                <th key={day} className="p-3 text-left font-medium text-slate-600">
-                  {day}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {timeSlots.map((time) => (
-              <tr key={time}>
-                <td className="p-3 font-medium text-slate-700">{time}</td>
-                {days.map((day) => (
-                  <td key={`${day}-${time}`} className="p-3">
-                    {/* Sample data - replace with actual timetable data */}
-                    {Math.random() > 0.6 && (
-                      <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-200">
-                        <div className="text-xs font-medium text-indigo-800">
-                          Course Name
-                        </div>
-                        <div className="text-xs text-indigo-600">Room 101</div>
-                      </div>
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
 
 function RequestFormsPanel() {
   const requestTypes = [
@@ -531,108 +666,10 @@ function RequestFormsPanel() {
   );
 }
 
-function RequestStatusPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Request Status</h3>
-      <div className="mt-4 space-y-3">
-        <StatRow label="Pending" value="2" />
-        <StatRow label="Approved" value="8" />
-        <StatRow label="Rejected" value="1" />
-        <StatRow label="Total Requests" value="11" />
-      </div>
-    </div>
-  );
-}
 
-function PendingRequestsPanel() {
-  const pendingRequests = [
-    {
-      type: "Leave Request",
-      date: "Dec 15, 2024",
-      status: "pending",
-      urgent: true,
-    },
-    {
-      type: "Class Swap",
-      date: "Dec 12, 2024",
-      status: "under_review",
-      urgent: false,
-    },
-  ];
 
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Pending Requests</h3>
-      <div className="mt-4 space-y-4">
-        {pendingRequests.map((request, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-4 p-4 rounded-lg border border-slate-200"
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{request.type}</span>
-                {request.urgent && (
-                  <span className="px-2 py-1 rounded-full text-xs bg-rose-100 text-rose-800">
-                    Urgent
-                  </span>
-                )}
-              </div>
-              <div className="text-sm text-slate-600">{request.date}</div>
-            </div>
-            <span
-              className={`px-2 py-1 rounded-full text-xs ${
-                request.status === "pending"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {request.status.replace("_", " ")}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-function MaterialsListPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Course Materials</h3>
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="search"
-            placeholder="Search materials..."
-            className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm"
-          />
-        </div>
-      </div>
-      <EmptyState
-        icon={DocumentArrowUpIcon}
-        title="No Materials Uploaded"
-        description="Upload study materials for your courses"
-      />
-    </div>
-  );
-}
 
-function MaterialsStatsPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Materials Overview</h3>
-      <div className="mt-4 space-y-3">
-        <StatRow label="Total Files" value="24" />
-        <StatRow label="This Month" value="6" />
-        <StatRow label="Most Downloaded" value="Lesson Plan 1" />
-        <StatRow label="Storage Used" value="145 MB" />
-      </div>
-    </div>
-  );
-}
 
 function EmptyState({ icon: IconComponent, title, description }) {
   return (

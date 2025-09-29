@@ -17,12 +17,19 @@ import {
   DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
-
 import TimetableGenerationPanel from "./timetableGenerationPanel";
+import FacultyManagement from "./facultyManagement";
+import StudentManagement from "./studentManagement";
+import CourseManagement from "./courseManagement";
+import RoomManagement from "./roomManagement";
+import EditableTimetable from "./editTimetable";
 
 export default function AdminDashboard() {
   const { user, profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
+  
+  
+  const [timetableData, setTimetableData] = useState([]);
 
   const navigation = [
     { id: "dashboard", label: "Dashboard", icon: ChartBarIcon },
@@ -100,8 +107,18 @@ export default function AdminDashboard() {
           {activeTab === "students" && <StudentsTab />}
           {activeTab === "courses" && <CoursesTab />}
           {activeTab === "rooms" && <RoomsTab />}
-          {activeTab === "generate" && <GenerateTab />}
-          {activeTab === "timetable" && <TimetableTab />}
+          {activeTab === "generate" && (
+            <GenerateTab 
+              timetableData={timetableData} 
+              setTimetableData={setTimetableData} 
+            />
+          )}
+          {activeTab === "timetable" && (
+            <TimetableTab 
+              timetableData={timetableData}
+              setTimetableData={setTimetableData}
+            />
+          )}
           {activeTab === "reports" && <ReportsTab />}
         </main>
       </div>
@@ -122,29 +139,25 @@ function DashboardTab() {
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Faculty"
-          value="0"
-       
+          value="54"
           color="indigo"
           icon={UserGroupIcon}
         />
         <StatsCard
           title="Active Students"
-          value="0"
-       
+          value="550"
           color="emerald"
           icon={AcademicCapIcon}
         />
         <StatsCard
           title="Courses Offered"
-          value="0"
-      
+          value="54"
           color="amber"
           icon={BookOpenIcon}
         />
         <StatsCard
           title="Room Utilization"
-          value="0"
-       
+          value="85"
           color="rose"
           icon={BuildingOfficeIcon}
         />
@@ -166,111 +179,22 @@ function DashboardTab() {
 }
 
 function FacultyTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Faculty Management</h2>
-          <p className="text-slate-600">
-            Manage faculty members and their assignments
-          </p>
-        </div>
-        <button className="flex items-center gap-2 w-full sm:w-auto rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-indigo-700 transition">
-          <PlusIcon className="h-4 w-4" />
-          Add New Faculty
-        </button>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8">
-          <FacultyListPanel />
-        </div>
-
-        <div className="lg:col-span-4">
-          <FacultyStatsPanel />
-        </div>
-      </div>
-    </div>
-  );
+  return <FacultyManagement/>
 }
 
 function StudentsTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Student Management</h2>
-          <p className="text-slate-600">
-            Import and manage student enrollment data
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-800 hover:border-slate-400 transition">
-            <DocumentArrowUpIcon className="h-4 w-4" />
-            Import Students
-          </button>
-          <button className="flex items-center gap-2 rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-indigo-700 transition">
-            <PlusIcon className="h-4 w-4" />
-            Add Student
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-9">
-          <StudentListPanel />
-        </div>
-        <div className="lg:col-span-3">
-          <StudentClassesPanel />
-        </div>
-      </div>
-    </div>
-  );
+  return <StudentManagement />;
 }
 
 function CoursesTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Course Management</h2>
-          <p className="text-slate-600">
-            Manage subjects, credits, and course types
-          </p>
-        </div>
-        <button className="flex items-center gap-2 w-full sm:w-auto rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-indigo-700 transition">
-          <PlusIcon className="h-4 w-4" />
-          Add New Course
-        </button>
-      </div>
-
-      <CourseManagementPanel />
-    </div>
-  );
+  return <CourseManagement />;
 }
 
 function RoomsTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Room Management</h2>
-          <p className="text-slate-600">
-            Manage classrooms, labs, and resource allocation
-          </p>
-        </div>
-        <button className="flex items-center gap-2 w-full sm:w-auto rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white shadow hover:bg-indigo-700 transition">
-          <PlusIcon className="h-4 w-4" />
-          Add New Room
-        </button>
-      </div>
-
-      <RoomManagementPanel />
-    </div>
-  );
+  return <RoomManagement />;
 }
 
-function GenerateTab() {
+function GenerateTab({ timetableData, setTimetableData }) {
   return (
     <div className="space-y-6">
       <div>
@@ -280,12 +204,38 @@ function GenerateTab() {
         </p>
       </div>
 
-      <TimetableGenerationPanel />
+      <TimetableGenerationPanel 
+        timetableData={timetableData}
+        setTimetableData={setTimetableData}
+      />
     </div>
   );
 }
 
-function TimetableTab() {
+function TimetableTab({ timetableData, setTimetableData }) {
+  const handleSave = async (updatedData) => {
+    try {
+    
+      const response = await fetch("http://localhost:8000/update-timetable", {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "accept": "application/json"
+        },
+        body: JSON.stringify({ data: updatedData })
+      });
+      
+      if (response.ok) {
+        setTimetableData(updatedData);
+        return true;
+      }
+      throw new Error("Failed to save timetable");
+    } catch (error) {
+      console.error("Error saving timetable:", error);
+      throw error;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -295,20 +245,22 @@ function TimetableTab() {
             Review and manually resolve timetable conflicts
           </p>
         </div>
-        <div className="flex gap-3">
-          <select className="rounded-md border border-slate-300 px-4 py-2 text-sm">
-            <option>B.Ed Semester 3</option>
-            <option>FYUP Science Year 2</option>
-            <option>M.Ed Semester 1</option>
-          </select>
-          <button className="flex items-center gap-2 rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-            <DocumentArrowDownIcon className="h-4 w-4" />
-            Export
-          </button>
-        </div>
       </div>
-
-      <TimetableViewPanel />
+      
+      {timetableData.length > 0 ? (
+        <EditableTimetable 
+          data={timetableData} 
+          onSave={handleSave}
+        />
+      ) : (
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-12">
+          <EmptyState
+            icon={CalendarDaysIcon}
+            title="No Timetable Available"
+            description="Please generate a timetable first from the 'Generate Timetable' section"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -495,130 +447,6 @@ function RecentActivityPanel() {
   );
 }
 
-function FacultyListPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Faculty List</h3>
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="search"
-            placeholder="Search faculty..."
-            className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm"
-          />
-        </div>
-      </div>
-      <EmptyState
-        icon={UserGroupIcon}
-        title="No Faculty Added"
-        description="Add faculty members to start managing schedules"
-      />
-    </div>
-  );
-}
-
-function FacultyStatsPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Faculty Statistics</h3>
-      <div className="mt-4 space-y-3">
-        <StatRow label="Total Faculty" value="0" />
-        <StatRow label="Active This Semester" value="0" />
-        <StatRow label="Average Load" value="0 hrs/week" />
-        <StatRow label="Overloaded" value="0" />
-      </div>
-    </div>
-  );
-}
-
-function StudentListPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Student Enrollment</h3>
-        <select className="px-4 py-2 border border-slate-300 rounded-lg text-sm">
-          <option>All Programs</option>
-          <option>B.Ed</option>
-          <option>M.Ed</option>
-          <option>FYUP</option>
-        </select>
-      </div>
-      <EmptyState
-        icon={AcademicCapIcon}
-        title="No Students Enrolled"
-        description="Import student data to manage class assignments"
-      />
-    </div>
-  );
-}
-
-function StudentClassesPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <h3 className="font-semibold">Class Distribution</h3>
-      <div className="mt-4 space-y-3">
-        <StatRow label="B.Ed Students" value="0" />
-        <StatRow label="M.Ed Students" value="0" />
-        <StatRow label="FYUP Students" value="0" />
-        <StatRow label="Total Classes" value="0" />
-      </div>
-    </div>
-  );
-}
-
-function CourseManagementPanel() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-          <h3 className="font-semibold">Course List</h3>
-          <EmptyState
-            icon={BookOpenIcon}
-            title="No Courses Added"
-            description="Create subjects with credits and course types"
-          />
-        </div>
-      </div>
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-        <h3 className="font-semibold">Course Types</h3>
-        <div className="mt-4 space-y-3">
-          <TypeBadge label="Lecture" count="0" />
-          <TypeBadge label="Lab" count="0" />
-          <TypeBadge label="Tutorial" count="0" />
-          <TypeBadge label="Practice" count="0" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RoomManagementPanel() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-4">
-      <div className="lg:col-span-3">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-          <h3 className="font-semibold">Room Directory</h3>
-          <EmptyState
-            icon={BuildingOfficeIcon}
-            title="No Rooms Configured"
-            description="Add classrooms and labs with capacity details"
-          />
-        </div>
-      </div>
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-        <h3 className="font-semibold">Capacity Overview</h3>
-        <div className="mt-4 space-y-3">
-          <StatRow label="Total Rooms" value="0" />
-          <StatRow label="Classrooms" value="0" />
-          <StatRow label="Labs" value="0" />
-          <StatRow label="Avg Capacity" value="0 seats" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ReportsAnalyticsPanel() {
   const reports = [
     {
@@ -687,36 +515,3 @@ function EmptyState({ icon: IconComponent, title, description }) {
     </div>
   );
 }
-
-function StatRow({ label, value }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-slate-600">{label}</span>
-      <span className="text-sm font-medium">{value}</span>
-    </div>
-  );
-}
-
-function TypeBadge({ label, count }) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-      <span className="text-sm font-medium">{label}</span>
-      <span className="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-        {count}
-      </span>
-    </div>
-  );
-}
-
-function TimetableViewPanel() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-xl p-6">
-      <EmptyState
-        icon={CalendarDaysIcon}
-        title="No Timetable Selected"
-        description="Generate or select a timetable to view and edit"
-      />
-    </div>
-  );
-}
-

@@ -1,0 +1,18 @@
+// Clear all auth-related storage
+localStorage.clear();
+sessionStorage.clear();
+
+// Clear all cookies for this domain
+document.cookie.split(";").forEach(function(c) { 
+    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+});
+
+// Clear specific Supabase items
+Object.keys(localStorage).forEach(key => {
+  if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
+    localStorage.removeItem(key);
+  }
+});
+
+// Force reload
+location.reload();
