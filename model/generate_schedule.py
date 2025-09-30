@@ -1,40 +1,65 @@
-
-
-
-
-import pandas as pd 
-print("Imported pandas")
+import random
+import pandas as pd
 from collections import defaultdict
-print("Imported defaultdict")
 import numpy as np
-print("Imported numpy")
 from supabase import create_client, Client
-print("Imported supabase")
 import os
-print("Imported os")
 from dotenv import load_dotenv
-print("Imported dotenv")
 
 from deap import base, creator, tools, algorithms
-print("Imported deap")
 
-print("About to define function...")
+# --- Clash Detection Function for Debugging ---
+def detailed_clash_report(individual, courses_df, faculty_df, rooms_df, course_student_groups):
+    """
+    Finds clashing time slots and prints a detailed breakdown of everything
+    scheduled in those slots to identify the conflict.
+    """
+    print("\n--- Detailed Clash Investigation Report ---")
+    time_slot_usage = defaultdict(list)
+    
+    for course_id, time_slot, room_id, faculty_id in individual:
+        student_groups = course_student_groups.get(course_id, set())
+        course_info = courses_df.loc[course_id]
+        faculty_info = faculty_df.loc[faculty_id]
+        room_info = rooms_df.loc[room_id]
+        
+        time_slot_usage[time_slot].append({
+            "course_code": course_info['course_code'],
+            "faculty_name": faculty_info['faculty_name'],
+            "room_name": room_info['room_name'],
+            "groups": student_groups
+        })
+
+    found_clash = False
+    for time_slot, scheduled_items in time_slot_usage.items():
+        if len(scheduled_items) > 1:
+            faculties = [item['faculty_name'] for item in scheduled_items]
+            rooms = [item['room_name'] for item in scheduled_items]
+            all_groups = [group for item in scheduled_items for group in item['groups']]
+            
+            if len(faculties) != len(set(faculties)) or \
+               len(rooms) != len(set(rooms)) or \
+               len(all_groups) != len(set(all_groups)):
+                
+                found_clash = True
+                print(f"\n❌ CONFLICT DETECTED IN TIME SLOT: {time_slot}")
+                for i, item in enumerate(scheduled_items):
+                    print(f"  - Item {i+1}:")
+                    print(f"    - Course: {item['course_code']}")
+                    print(f"    - Faculty: {item['faculty_name']}")
+                    print(f"    - Room: {item['room_name']}")
+                    print(f"    - Student Groups: {item['groups']}")
+    
+    if not found_clash:
+        print("✅ No clashing time slots found in the final schedule.")
+
 
 def run_timetable_generation():
-    print("Function is being defined!")
     """
     Main function to connect to data, run the genetic algorithm,
     format the result, and upload it to Supabase.
     """
-    import random
-    import pandas as pd
-    from collections import defaultdict
-    import numpy as np
-    from supabase import create_client, Client
-    import os
-    from dotenv import load_dotenv
-    from deap import base, creator, tools, algorithms
- 
+    # --- 1. Load Data from Supabase (Securely) ---
     load_dotenv()
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -55,19 +80,17 @@ def run_timetable_generation():
         print(f"An error occurred while fetching from Supabase: {e}")
         return "FAILURE: Data fetching error."
 
- 
+    # --- PERFORMANCE OPTIMIZATION: Set index for much faster lookups later ---
     courses_df.set_index('course_id', inplace=True)
     faculty_df.set_index('faculty_id', inplace=True)
     rooms_df.set_index('room_id', inplace=True)
 
-
-    TIME_SLOTS = [
-        "Mon_09-10", "Mon_10-11", "Mon_11-12", "Mon_01-02", "Mon_02-03", "Mon_03-04", 
-        "Tue_09-10", "Tue_10-11", "Tue_11-12", "Tue_01-02", "Tue_02-03", "Tue_03-04", 
-        "Wed_09-10", "Wed_10-11", "Wed_11-12", "Wed_01-02", "Wed_02-03", "Wed_03-04", 
-        "Thu_09-10", "Thu_10-11", "Thu_11-12", "Thu_01-02", "Thu_02-03", "Thu_03-04", 
-        "Fri_09-10", "Fri_10-11", "Fri_11-12", "Fri_01-02", "Fri_02-03", "Fri_03-04"
-    ]
+    # --- 2. Define Constants and Pre-compute Helper Data ---
+    TIME_SLOTS = ["Mon_09-10", "Mon_10-11", "Mon_11-12", "Mon_01-02", "Mon_02-03", "Mon_03-04", 
+                  "Tue_09-10", "Tue_10-11", "Tue_11-12", "Tue_01-02", "Tue_02-03", "Tue_03-04", 
+                  "Wed_09-10", "Wed_10-11", "Wed_11-12", "Wed_01-02", "Wed_02-03", "Wed_03-04", 
+                  "Thu_09-10", "Thu_10-11", "Thu_11-12", "Thu_01-02", "Thu_02-03", "Thu_03-04", 
+                  "Fri_09-10", "Fri_10-11", "Fri_11-12", "Fri_01-02", "Fri_02-03", "Fri_03-04"]
     COURSE_IDS = courses_df.index.tolist()
     ROOM_IDS = rooms_df.index.tolist()
 
@@ -85,7 +108,6 @@ def run_timetable_generation():
         valid_faculty = faculty_df[faculty_df['expertise'].str.contains(course_code, na=False)].index.tolist()
         course_to_valid_faculty[cid] = valid_faculty if valid_faculty else faculty_df.index.tolist()
 
-
     course_to_duration = {}
     for course_id, course_data in courses_df.iterrows():
         if course_data.get('practical_hours_week', 0) > 0:
@@ -93,7 +115,7 @@ def run_timetable_generation():
         else:
             course_to_duration[course_id] = 1
 
- 
+    # --- 3. Genetic Algorithm Setup ---
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
     toolbox = base.Toolbox()
@@ -107,7 +129,7 @@ def run_timetable_generation():
     toolbox.register("individual", tools.initIterate, creator.Individual, create_full_individual)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-  
+    # --- 4. Upgraded Fitness Function (Duration-Aware and Room-Type-Aware) ---
     def evaluate_timetable(individual):
         clashes = 0
         time_slot_usage = defaultdict(list)
@@ -148,10 +170,22 @@ def run_timetable_generation():
         for course_id, _, room_id, faculty_id in individual:
             faculty_info = faculty_df.loc[faculty_id]
             course_info = courses_df.loc[course_id]
+            room_info = rooms_df.loc[room_id]
+
             if course_info['course_code'] not in faculty_info['expertise']: penalties += 5
-            room_capacity = rooms_df.loc[room_id]['capacity']
+            
             num_students = len(enrollments_df[enrollments_df['course_id'] == course_id])
-            if num_students > room_capacity: penalties += 10
+            if num_students > room_info['capacity']: penalties += 10
+            
+            # --- NEW: Penalty for incorrect room type ---
+            is_lab_course = course_info['practical_hours_week'] > 0
+            is_lab_room = room_info['room_type'] == 'Lab'
+
+            if is_lab_course and not is_lab_room:
+                penalties += 50  # Heavy penalty for scheduling a lab in a non-lab room
+
+            if not is_lab_course and is_lab_room:
+                penalties += 25  # Lighter penalty for using a valuable lab for a lecture
         
         group_schedules = defaultdict(lambda: defaultdict(list))
         for course_id, time_slot, _, _ in individual:
@@ -175,9 +209,9 @@ def run_timetable_generation():
     toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.1)
     toolbox.register("select", tools.selTournament, tournsize=3)
 
-
+    # --- 5. Run the Algorithm ---
     print("Starting genetic algorithm...")
-    POPULATION_SIZE, CROSSOVER_PROB, MUTATION_PROB, NUM_GENERATIONS = 300, 0.8, 0.2, 80
+    POPULATION_SIZE, CROSSOVER_PROB, MUTATION_PROB, NUM_GENERATIONS = 500, 0.8, 0.2, 150 # Increased for a more thorough search
     pop = toolbox.population(n=POPULATION_SIZE)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -187,7 +221,11 @@ def run_timetable_generation():
     best_individual = hof[0]
     print(f"\n--- Best Timetable Found --- Fitness Score: {best_individual.fitness.values[0]}")
 
+    # Call the detailed clash detector if the score is poor
+    if best_individual.fitness.values[0] < -500:
+        detailed_clash_report(best_individual, courses_df, faculty_df, rooms_df, course_student_groups)
 
+    # --- 6. Format and Upload the Final Timetable ---
     print("Formatting and uploading the final timetable...")
     try:
         courses_df.reset_index(inplace=True)
@@ -213,8 +251,11 @@ def run_timetable_generation():
         supabase.table('final_timetable').delete().neq('Day', 'dummy_value_to_delete_all').execute()
         supabase.table('final_timetable').insert(data_to_upload).execute()
         
-        print("\n Success! Timetable data has been updated in Supabase.")
+        print("\n✅ Success! Timetable data has been updated in Supabase.")
         return "SUCCESS"
     except Exception as e:
-        print(f"\n An error occurred during formatting or upload: {e}")
+        print(f"\n❌ An error occurred during formatting or upload: {e}")
         return "FAILURE"
+
+if __name__ == "__main__":
+    run_timetable_generation()
